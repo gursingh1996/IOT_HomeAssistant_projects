@@ -4,7 +4,7 @@
 // Update these with values suitable for your network.
 #define status_led BUILTIN_LED
 
-#define lockPin    14
+#define lockPin    4
 
 const char* ssid = "Tenda_E0B350";
 const char* password = "meetupper430";
@@ -44,11 +44,12 @@ void writeData(int pin){
   digitalWrite(lockPin, HIGH);
   delay(200);
   digitalWrite(lockPin, LOW);
-  client.publish("/doorLock", "b");
+  delay(300);
+  client.publish("/home/doorLock/state", "b");
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
+  Serial.print("\nMessage arrived [");
   Serial.print(topic);
   Serial.print("] ");
   for (int i = 0; i < length; i++) {
@@ -66,9 +67,9 @@ void reconnect() {
     String clientId = "lens_5kchta2dWhdRS2AQz0TeTuhplPE";
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
-    if (client.connect(clientId.c_str(),"openhabian", "openhabian")) {
+    if (client.connect(clientId.c_str(),"mqtt-connect-user", "1234")) {
       Serial.println("connected");
-      client.subscribe("/doorLock");
+      client.subscribe("/home/doorLock/command");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
