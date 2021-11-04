@@ -7,16 +7,14 @@
 #define SH_CP 16
 #define ST_CP 14
 #define DS    12
-#define EN    13
+#define EN    4
 
 #define latchPin ST_CP
 #define clockPin SH_CP
 #define dataPin DS
 
-#define lightRelay              B01000000
-#define lightPin                1
-#define fanRelay                B00110000
-#define fanPin                  2
+#define outdoor_lightRelay              B00000001
+#define outdoor_lightPin                3       //number 3 relay for outdoor light
 
 int data = B00000000;
 
@@ -55,11 +53,8 @@ void setup_wifi() {
 }
 
 void writeData(int pin, int value){
-  if(pin==lightPin){
-    value ? data|=lightRelay : data&=~(lightRelay); 
-  }
-  else if(pin==fanPin){
-    value ? data|=fanRelay : data&=~(fanRelay); 
+  if(pin==outdoor_lightPin){
+    value ? data|=outdoor_lightRelay : data&=~(outdoor_lightRelay); 
   }
   digitalWrite(latchPin, LOW);
   shiftOut(dataPin, clockPin, LSBFIRST, data);
@@ -74,20 +69,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.print((char)payload[i]);
   }
   if ((char)payload[0] == 'a'){
-    writeData(lightPin, 1);
-    client.publish("/gurpreetRoom/light/state", "a");
+    writeData(outdoor_lightPin, 1);
+    client.publish("/home/outdoorLight/state", "a");
   }
   else if((char)payload[0] == 'b'){
-    writeData(lightPin, 0);
-    client.publish("/gurpreetRoom/light/state", "b");
-  }
-  else if ((char)payload[0] == 'c'){
-    writeData(fanPin, 1);
-    client.publish("/gurpreetRoom/fan/state", "c");  
-  }
-  else if((char)payload[0] == 'd'){
-    writeData(fanPin, 0);
-    client.publish("/gurpreetRoom/fan/state", "d"); 
+    writeData(outdoor_lightPin, 0);
+    client.publish("/home/outdoorLight/state", "b");
   }
 }
 
@@ -101,8 +88,7 @@ void reconnect() {
     // Attempt to connect
     if (client.connect(clientId.c_str(),"mqtt-connect-user", "1234")) {
       Serial.println("connected");
-      client.subscribe("/gurpreetRoom/light/command");
-      client.subscribe("/gurpreetRoom/fan/command");
+      client.subscribe("/home/outdoorLight/command");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
