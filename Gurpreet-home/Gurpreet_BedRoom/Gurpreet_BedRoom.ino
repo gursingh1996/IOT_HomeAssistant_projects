@@ -67,20 +67,28 @@ void writeData(int pin, int value){
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
+  Serial.print("\nMessage arrived [");
   Serial.print(topic);
   Serial.print("] ");
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
-  if ((char)payload[0] == 'a')
+  if ((char)payload[0] == 'a'){
     writeData(lightPin, 1);
-  else if((char)payload[0] == 'b')
+    client.publish("/gurpreetRoom/light/state", "a");
+  }
+  else if((char)payload[0] == 'b'){
     writeData(lightPin, 0);
-  else if ((char)payload[0] == 'c')
+    client.publish("/gurpreetRoom/light/state", "b");
+  }
+  else if ((char)payload[0] == 'c'){
     writeData(fanPin, 1);
-  else if((char)payload[0] == 'd')
+    client.publish("/gurpreetRoom/fan/state", "c");  
+  }
+  else if((char)payload[0] == 'd'){
     writeData(fanPin, 0);
+    client.publish("/gurpreetRoom/fan/state", "d"); 
+  }
 }
 
 void reconnect() {
@@ -91,9 +99,10 @@ void reconnect() {
     String clientId = "lens_5kchta2dWhdRS2AQz0TeTuhplPE";
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
-    if (client.connect(clientId.c_str(),"openhabian", "openhabian")) {
+    if (client.connect(clientId.c_str(),"mqtt-connect-user", "1234")) {
       Serial.println("connected");
-      client.subscribe("/gurpreetBedroom");
+      client.subscribe("/gurpreetRoom/light/command");
+      client.subscribe("/gurpreetRoom/fan/command");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
